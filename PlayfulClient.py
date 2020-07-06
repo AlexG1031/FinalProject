@@ -12,15 +12,15 @@ list = OptionMenu(frame,click, "Alpha", "Beta", "Gamma")
 list.config(font=("Arial", 15))
 list.pack()
 
-e = Entry(frame, width=30)
-e.insert(0, "Send message: ")
-e.pack()
-
-def myClick():
+def onReturn(event):
     myLabel = Label(frame, text=e.get())
     myLabel.pack()
+    e.delete(0, 'end')
 
-myButton = Button(frame, text="send", command=myClick)
-myButton.pack()
+
+e = Entry(frame, width=30)
+e.insert(0, "Send message: ")
+e.bind("<Return>", onReturn)
+e.pack()
 
 root.mainloop()
