@@ -8,7 +8,7 @@ options = [
     "Tom",
 ]
 
-conv_label_texts = [
+conv_texts = [
     "",
     "",
     "",
@@ -21,13 +21,14 @@ def comboclick(event):
 
 def onReturn(event):
     index = options.index(myCombo.get())
-    conv_label_texts[index] = conv_label_texts[index] + name + ": " + t.get("0.0", "end")
-    myLabel = Label(frame, text=conv_label_texts[index])
+    conv_texts[index] = conv_texts[index] + name + ": " + t.get("0.0", "end")
+    myLabel = Label(frame, text=conv_texts[index])
     myLabel.pack()
     t.delete("0.0", "end")
 
 root = Tk()
 root.title("Client")
+root.geometry("800x800")
 name = "Avatar Aang"
 
 frame = LabelFrame(root, text="Group Message", padx=100, pady=200)
