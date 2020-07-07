@@ -2,16 +2,27 @@ from tkinter import *
 from tkinter import ttk, Text
 
 options = [
+    "Everyone",
     "Alex",
     "Jim",
     "Tom",
 ]
 
+conv_label_texts = [
+    "",
+    "",
+    "",
+    "",
+]
+
 def comboclick(event):
     Label(frame, text=myCombo.get()).pack()
 
+
 def onReturn(event):
-    myLabel = Label(frame, text=name + ": " + t.get("0.0", "end"))
+    index = options.index(myCombo.get())
+    conv_label_texts[index] = conv_label_texts[index] + name + ": " + t.get("0.0", "end")
+    myLabel = Label(frame, text=conv_label_texts[index])
     myLabel.pack()
     t.delete("0.0", "end")
 
