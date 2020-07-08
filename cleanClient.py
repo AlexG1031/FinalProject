@@ -36,8 +36,8 @@ class App:
 
 
     def label(self):
-        self.label1= Label(self.frame2, text="To: ")
-        self.label1.pack(side="left", fill=X)
+        self.label2= Label(self.frame2, text="To: ")
+        self.label2.pack(side="left", fill=X)
         self.comboBox1 = ttk.Combobox(self.frame2, value=self.options)
         self.comboBox1.current(0)
         self.comboBox1.pack(side="left", fill=X)
@@ -53,8 +53,8 @@ class App:
     def onReturn(self):
         index = self.options.index(self.comboBox1.get())
         self.conv_texts[index] = self.conv_texts[index] + self.name + ": " + self.text1.get("0.0", "end")
-        self.label2 = Label(self.frame1, text=self.conv_texts[index])
-        self.label2.pack(fill=X)
+        self.label1 = Label(self.frame1, text=self.conv_texts[index])
+        self.label1.pack(side="left")
         self.text1.delete("0.0", "end")
 
 root = Tk()
