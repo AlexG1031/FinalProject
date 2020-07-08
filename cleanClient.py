@@ -31,8 +31,9 @@ class App:
         self.frame3 = Frame(self.root) # TypeBox
 
         self.frame1.pack(fill=X)
-        self.frame2.pack(fill=X)
-        self.frame3.pack(fill=X)
+        self.frame3.pack(fill=X, side="bottom")
+        self.frame2.pack(fill=X, side="bottom")
+
 
     def label(self):
         self.label1= Label(self.frame2, text="To: ")
