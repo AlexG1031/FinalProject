@@ -21,23 +21,27 @@ class App:
         self.name = "Avatar Aang"
         self.frame()
         self.label()
+        self.comboBox()
         self.text()
         self.text1.bind("<Return>", lambda x: self.onReturn())
-        # self.comb
+        self.comboBox1.bind("Click", lambda x: self.comboclick())
 
     def frame(self):
         self.frame1 = Frame(self.root) # Message box
         self.frame2 = Frame(self.root) # To: "___"
         self.frame3 = Frame(self.root) # TypeBox
 
-        self.frame1.pack(fill=X)
+        self.frame1.pack(fill=X, side="top")
         self.frame3.pack(fill=X, side="bottom")
         self.frame2.pack(fill=X, side="bottom")
 
-
     def label(self):
+        self.label1 = Label(self.frame1, text=self.conv_texts[0])
         self.label2= Label(self.frame2, text="To: ")
+        self.label1.pack(side="left")
         self.label2.pack(side="left", fill=X)
+
+    def comboBox(self):
         self.comboBox1 = ttk.Combobox(self.frame2, value=self.options)
         self.comboBox1.current(0)
         self.comboBox1.pack(side="left", fill=X)
@@ -46,16 +50,21 @@ class App:
         self.text1 = Text(self.frame3, width=40, height=5)
         self.text1.pack(side="left")
 
-    # def comboclick(self):
-    #     self.label1 = Label(self.frame1, text=self.comboBox1.get())
-    #     self.label1.pack()
-
     def onReturn(self):
+        #TODO
+        #possibly for return, have each text be in a frame so that
+        #they all can be on the left side
         index = self.options.index(self.comboBox1.get())
         self.conv_texts[index] = self.conv_texts[index] + self.name + ": " + self.text1.get("0.0", "end")
+        self.label1.destroy()
         self.label1 = Label(self.frame1, text=self.conv_texts[index])
         self.label1.pack(side="left")
         self.text1.delete("0.0", "end")
+
+    def comboclick(self):
+        self.label1 = Label(self.frame1, text=self.comboBox1.get())
+        self.label1.pack(side="left")
+        self.onReturn()
 
 root = Tk()
 root.title("Group Chat")
