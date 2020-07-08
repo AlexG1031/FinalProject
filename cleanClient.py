@@ -27,6 +27,7 @@ class App:
         self.comboBox1.bind("Click", lambda x: self.comboclick())
 
     def frame(self):
+        #TODO: be sure frame1 doesn't go over the other frames
         self.frame1 = Frame(self.root) # Message box
         self.frame2 = Frame(self.root) # To: "___"
         self.frame3 = Frame(self.root) # TypeBox
@@ -51,9 +52,8 @@ class App:
         self.text1.pack(side="left")
 
     def onReturn(self):
-        #TODO
-        #possibly for return, have each text be in a frame so that
-        #they all can be on the left side
+        # TODO: possibly for return, have each text be in a frame so that
+        #       they all can be on the left side
         index = self.options.index(self.comboBox1.get())
         self.conv_texts[index] = self.conv_texts[index] + self.name + ": " + self.text1.get("0.0", "end")
         self.label1.destroy()
@@ -62,6 +62,8 @@ class App:
         self.text1.delete("0.0", "end")
 
     def comboclick(self):
+        # TODO: have this work properly so that changing the thing within
+        #       the comboBox also changes the text displayed on top
         self.label1 = Label(self.frame1, text=self.comboBox1.get())
         self.label1.pack(side="left")
         self.onReturn()
