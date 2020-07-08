@@ -1,84 +1,82 @@
-from tkinter import *
-from tkinter import ttk, Text
+import socket
+import errno
+import sys
 
-class App:
-    options = [
-        "Everyone",
-        "Alex",
-        "Jim",
-        "Tom",
-    ]
+HEADER_LENGTH = 10
 
-    conv_texts = [
-        [],
-        [],
-        [],
-        [],
-    ]
+IP = "127.0.0.1"
+PORT = 1234
+my_username = input("Username: ")
 
-    def __init__(self, root):
-        self.root = root
-        self.name = "Avatar Aang"
-        self.frame()
-        self.listbox()
-        self.label()
-        self.comboBox()
-        self.text()
-        self.text1.bind("<Return>", lambda x: self.onReturn())
-        self.comboBox1.bind("<<ComboboxSelected>>", lambda x: self.comboclick())
+# Create a socket
+# socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
+# socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def frame(self):
-        #TODO: be sure frame1 has a scroll to see past msgs
-        self.frame1 = Frame(self.root) # Message box
-        self.frame2 = Frame(self.root) # To: "___"
-        self.frame3 = Frame(self.root) # TypeBox
+# Connect to a given ip and port
+client_socket.connect((IP, PORT))
 
-        self.frame1.pack(fill=X, side="top")
-        self.frame3.pack(fill=X, side="bottom")
-        self.frame2.pack(fill=X, side="bottom")
+# Set connection to non-blocking state, so .recv() call won;t block, just return some exception we'll handle
+client_socket.setblocking(False)
 
-    def listbox(self):
-        self.listbox1 = Listbox(self.frame1)
-        self.listbox1.pack(side="left", fill=BOTH, expand=1)
+# Prepare username and header and send them
+# We need to encode username to bytes, then count number of bytes and prepare header of fixed size, that we encode to bytes as well
+username = my_username.encode('utf-8')
+username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
+client_socket.send(username_header + username)
 
+while True:
 
-    def label(self):
-        self.label1= Label(self.frame2, text="To: ")
-        self.label1.pack(side="left", fill=X)
+    # Wait for user to input a message
+    message = input(f'{my_username} > ')
 
-    def comboBox(self):
-        self.comboBox1 = ttk.Combobox(self.frame2, value=self.options)
-        self.comboBox1.current(0)
-        self.comboBox1.pack(side="left", fill=X)
+    # If message is not empty - send it
+    if message:
 
-    def text(self):
-        self.text1 = Text(self.frame3, width=40, height=5)
-        self.text1.pack(side="left")
+        # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
+        message = message.encode('utf-8')
+        message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
+        client_socket.send(message_header + message)
 
-    def onReturn(self):
-        msg = self.name + ": " + self.text1.get("0.0", "end")
-        self.text1.delete("0.0", "end")
+    try:
+        # Now we want to loop over received messages (there might be more than one) and print them
+        while True:
 
-        self.listbox1.destroy()
-        self.listbox1 = Listbox(self.frame1)
-        self.listbox1.pack(side="left", fill=BOTH, expand=1)
+            # Receive our "header" containing username length, it's size is defined and constant
+            username_header = client_socket.recv(HEADER_LENGTH)
 
-        index = self.options.index(self.comboBox1.get())
-        self.conv_texts[index].append(msg)
-        for past_msg in self.conv_texts[index]:
-            self.listbox1.insert(END, past_msg)
+            # If we received no data, server gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+            if not len(username_header):
+                print('Connection closed by the server')
+                sys.exit()
 
-    def comboclick(self):
-        self.listbox1.destroy()
-        self.listbox1 = Listbox(self.frame1)
-        self.listbox1.pack(side="left", fill=BOTH, expand=1)
-        index = self.options.index(self.comboBox1.get())
-        for past_msg in self.conv_texts[index]:
-            self.listbox1.insert(END, past_msg)
+            # Convert header to int value
+            username_length = int(username_header.decode('utf-8').strip())
 
-root = Tk()
-root.title("Group Chat")
-root.geometry("300x600")
+            # Receive and decode username
+            username = client_socket.recv(username_length).decode('utf-8')
 
-app = App(root)
-root.mainloop()
+            # Now do the same for message (as we received username, we received whole message, there's no need to check if it has any length)
+            message_header = client_socket.recv(HEADER_LENGTH)
+            message_length = int(message_header.decode('utf-8').strip())
+            message = client_socket.recv(message_length).decode('utf-8')
+
+            # Print message
+            print(f'{username} > {message}')
+
+    except IOError as e:
+        # This is normal on non blocking connections - when there are no incoming data error is going to be raised
+        # Some operating systems will indicate that using AGAIN, and some using WOULDBLOCK error code
+        # We are going to check for both - if one of them - that's expected, means no incoming data, continue as normal
+        # If we got different error code - something happened
+        if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
+            print('Reading error: {}'.format(str(e)))
+            sys.exit()
+
+        # We just did not receive anything
+        continue
+
+    except Exception as e:
+        # Any other exception - something happened, exit
+        print('Reading error: '.format(str(e)))
+        sys.exit()
