@@ -10,10 +10,10 @@ class App:
     ]
 
     conv_texts = [
-        [""],
-        [""],
-        [""],
-        [""],
+        [],
+        [],
+        [],
+        [],
     ]
 
     def __init__(self, root):
@@ -60,23 +60,15 @@ class App:
     def onReturn(self):
         msg = self.name + ": " + self.text1.get("0.0", "end")
         self.text1.delete("0.0", "end")
+
         self.listbox1.destroy()
         self.listbox1 = Listbox(self.frame1)
+
         index = self.options.index(self.comboBox1.get())
         self.conv_texts[index].append(msg)
         for past_msg in self.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
         self.listbox1.pack(side="left", fill=BOTH, expand=1)
-
-        # msg = self.name + ": " + self.text1.get("0.0", "end")
-        # self.text1.delete("0.0", "end")
-        # self.listbox1.destroy()
-        # index = self.options.index(self.comboBox1.get())
-        # for label in self.conv_texts[index]:
-        #     self.listbox1.insert(END, label)
-        # self.listbox1.insert(END, msg)
-        # self.conv_texts[index].insert(END, msg)
-        # self.listbox1.pack(side="left", fill=BOTH, expand=1)
 
     def comboclick(self):
         # TODO: have this work properly so that changing the thing within
