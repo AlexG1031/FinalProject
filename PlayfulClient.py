@@ -31,8 +31,8 @@ root.title("Client")
 root.geometry("800x800")
 name = "Avatar Aang"
 
-frame = LabelFrame(root, text="Group Message", padx=100, pady=200)
-frame.pack(padx=10, pady=10)
+frame = LabelFrame(root, text="Group Message")
+frame.pack(padx=10, pady=10, fill=None, expand=False)
 
 toLabel = Label(frame, text="To: ")
 toLabel.pack()
