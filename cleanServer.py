@@ -14,8 +14,8 @@ sockets_list = [server_socket]
 clients = {}
 print(f'Listening for connections on {IP}:{PORT}...')
 
-def receive_message(client_socket):
 
+def receive_message(client_socket):
     try:
         message_header = client_socket.recv(HEADER_LENGTH)
         if not len(message_header):
@@ -26,9 +26,9 @@ def receive_message(client_socket):
     except:
         return False
 
+
 while True:
     read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
-
 
     for notified_socket in read_sockets:
 
@@ -39,7 +39,8 @@ while True:
                 continue
             sockets_list.append(client_socket)
             clients[client_socket] = user
-            print('Accepted new connection from {}:{}, username: {}'.format(*client_address, user['data'].decode('utf-8')))
+            print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
+                                                                            user['data'].decode('utf-8')))
 
         else:
             message = receive_message(notified_socket)
