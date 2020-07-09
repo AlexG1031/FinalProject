@@ -118,7 +118,7 @@ class App:
         # while not self.queue.empty():
         while True:
             x = self.queue.get()
-            print(f'x is {x}')
+            # print(f'x is {x}')
             if x == 1:
                 self.send_message() # don't think this will ever be used...
             if x == 2:
@@ -174,7 +174,6 @@ class App:
             sys.exit()
 
     def display_recv_message(self):
-        print("gooooooood")
         while True:
             # time = 0.00125
             message = ""
