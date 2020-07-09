@@ -39,8 +39,9 @@ class App:
         self.create_workers()
         self.create_job(3) # will run GUI
         self.create_job(2) # will always listen for incoming message
-        self.create_job(1) # will always listen for incoming cleints
+        # self.create_job(1) # will always listen for incoming clients
         self.work()
+
 
     def frame(self):
         # TODO: be sure frame1 has a scroll to see past msgs
@@ -100,6 +101,8 @@ class App:
         self.username = self.my_username.encode('utf-8')
         username_header = f"{len(self.username):<{self.HEADER_LENGTH}}".encode('utf-8')
         self.client_socket.send(username_header + self.username)
+        self.msg = self.my_username + " just joined the group chat!"
+        self.send_message()
 
     # Create worker threads
     def create_workers(self):
@@ -116,7 +119,8 @@ class App:
             # print(f'x is {x}')
             if x == 1:
                 # self.send_message() # don't think this will ever be used...
-                self.displayPosConnection()
+                # self.displayPosConnection()
+                y = 1
             if x == 2:
                 self.display_recv_message()
             if x == 3:
@@ -212,15 +216,15 @@ class App:
         for past_msg in self.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
 
-    def displayPosConnection(self):
-        self.listbox1.destroy()
-        self.listbox1 = Listbox(self.frame1)
-        self.listbox1.pack(side="left", fill=BOTH, expand=1)
-
-        index = self.options.index(self.comboBox1.get())
-        self.conv_texts[index].append("Accepted new Client!")
-        for past_msg in self.conv_texts[index]:
-            self.listbox1.insert(END, past_msg)
+    # def displayPosConnection(self):
+    #     self.listbox1.destroy()
+    #     self.listbox1 = Listbox(self.frame1)
+    #     self.listbox1.pack(side="left", fill=BOTH, expand=1)
+    #
+    #     index = self.options.index(self.comboBox1.get())
+    #     self.conv_texts[index].append("Accepted new Client!")
+    #     for past_msg in self.conv_texts[index]:
+    #         self.listbox1.insert(END, past_msg)
 
 root = Tk()
 root.title("Group Chat")
