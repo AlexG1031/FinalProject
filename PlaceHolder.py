@@ -6,6 +6,7 @@ import sys
 import threading
 from queue import Queue
 
+
 class App:
     options = [
         "Everyone",
@@ -24,8 +25,8 @@ class App:
     IP = "127.0.0.1"
     PORT = 1234
     my_username = input("Username: ")
-    NUMBER_OF_THREADS = 2
-    JOB_NUMBER = [1, 2]
+    NUMBER_OF_THREADS = 3
+    JOB_NUMBER = [1, 2, 3]
     queue = Queue()
     all_connections = []
     all_address = []
@@ -42,7 +43,8 @@ class App:
         self.comboBox1.bind("<<ComboboxSelected>>", lambda x: self.comboclick())
         self.set_up_connection()
         self.create_workers()
-        self.create_jobs()
+        self.create_job(3) # will run GUI
+        self.create_job(2) # will always listen for incoming message
         self.work()
 
     def frame(self):
@@ -84,6 +86,9 @@ class App:
         self.conv_texts[index].append(self.msg)
         for past_msg in self.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
+        # self.create_job(1)
+        self.send_message()
+        # print(self.msg)
 
     def comboclick(self):
         self.listbox1.destroy()
@@ -100,6 +105,7 @@ class App:
         self.username = self.my_username.encode('utf-8')
         username_header = f"{len(self.username):<{self.HEADER_LENGTH}}".encode('utf-8')
         self.client_socket.send(username_header + self.username)
+
     # Create worker threads
     def create_workers(self):
         for _ in range(self.NUMBER_OF_THREADS):
@@ -107,53 +113,66 @@ class App:
             t.daemon = True
             t.start()
 
-
     # Do next job that is in the queue (send message or display new message)
     def work(self):
+        # while not self.queue.empty():
         while True:
             x = self.queue.get()
+            print(f'x is {x}')
             if x == 1:
                 self.send_message()
             if x == 2:
                 self.display_recv_message()
+            if x == 3:
+                self.root.mainloop()
+            # self.queue.task_done()
 
-            self.queue.task_done()
-    def create_jobs(self):
-        for x in self.JOB_NUMBER:
+    def create_job(self, x):  # x can only be 1 or 2
+        # for x in self.JOB_NUMBER:
+        if x == 1 or x == 2 or x == 3:
             self.queue.put(x)
+            # print("hello")
+            # self.queue.join()
+        else:
+            print("x is not 1, 2 or 3")
 
-        self.queue.join()
     def send_message(self):
-        while True:
-            message = input(f'{self.my_username} > ')
-            if message:
-                message = message.encode('utf-8')
-                message_header = f"{len(message):<{self.HEADER_LENGTH}}".encode('utf-8')
-                self.client_socket.send(message_header + message)
-            try:
-                while True:
-                    username_header = self.client_socket.recv(self.HEADER_LENGTH)
-                    if not len(username_header):
-                        print('Connection closed by the server')
-                        sys.exit()
-                    username_length = int(username_header.decode('utf-8').strip())
-                    username = self.client_socket.recv(username_length).decode('utf-8')
-
-                    message_header = self.client_socket.recv(self.HEADER_LENGTH)
-                    message_length = int(message_header.decode('utf-8').strip())
-                    message = self.client_socket.recv(message_length).decode('utf-8')
-
-                    print(f'{username} > {message}')
-
-            except IOError as e:
-                if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
-                    print('Reading error: {}'.format(str(e)))
-                    sys.exit()
-                continue
-
-            except Exception as e:
-                print('Reading error: '.format(str(e)))
+        # print("begin send_message")
+        # while True:
+        # print("while true 1")
+        # message = input(f'{self.my_username} > ')
+        message = self.msg
+        if message:
+            message = message.encode('utf-8')
+            message_header = f"{len(message):<{self.HEADER_LENGTH}}".encode('utf-8')
+            self.client_socket.send(message_header + message)
+        try:
+            # while True:
+            # print("while true 2")
+            username_header = self.client_socket.recv(self.HEADER_LENGTH)
+            if not len(username_header):
+                print('Connection closed by the server')
                 sys.exit()
+            username_length = int(username_header.decode('utf-8').strip())
+            username = self.client_socket.recv(username_length).decode('utf-8')
+
+            message_header = self.client_socket.recv(self.HEADER_LENGTH)
+            message_length = int(message_header.decode('utf-8').strip())
+            message = self.client_socket.recv(message_length).decode('utf-8')
+
+            print(f'{username} > {message}')
+            # self.create_job(2)  # makes sure other clients gets updated
+
+        except IOError as e:
+            if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
+                print('Reading error: {}'.format(str(e)))
+                sys.exit()
+            # continue
+
+        except Exception as e:
+            print('Reading error: '.format(str(e)))
+            sys.exit()
+
     def display_recv_message(self):
         while True:
             # time = 0.00125
@@ -187,9 +206,9 @@ class App:
                 print('Reading error: '.format(str(e)))
                 sys.exit()
 
+
 root = Tk()
 root.title("Group Chat")
 root.geometry("300x600")
 
 app = App(root)
-root.mainloop()
