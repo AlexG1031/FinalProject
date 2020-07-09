@@ -41,6 +41,13 @@ while True:
             clients[client_socket] = user
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
                                                                             user['data'].decode('utf-8')))
+            # message_header = client_socket.recv(HEADER_LENGTH)
+            # message_length = int(message_header.decode('utf-8').strip())
+            # message = {'header': message_header, 'data': client_socket.recv(message_length)}
+            # for client_socket in clients:
+            #     # if client_socket != notified_socket:
+            #     # TODO determine how to send print statement above...
+            #     client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
 
         else:
             message = receive_message(notified_socket)

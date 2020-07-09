@@ -10,15 +10,9 @@ from queue import Queue
 class App:
     options = [
         "Everyone",
-        "Alex",
-        "Jim",
-        "Tom",
     ]
 
     conv_texts = [
-        [],
-        [],
-        [],
         [],
     ]
     HEADER_LENGTH = 10
@@ -45,6 +39,7 @@ class App:
         self.create_workers()
         self.create_job(3) # will run GUI
         self.create_job(2) # will always listen for incoming message
+        self.create_job(1) # will always listen for incoming cleints
         self.work()
 
     def frame(self):
@@ -120,7 +115,8 @@ class App:
             x = self.queue.get()
             # print(f'x is {x}')
             if x == 1:
-                self.send_message() # don't think this will ever be used...
+                # self.send_message() # don't think this will ever be used...
+                self.displayPosConnection()
             if x == 2:
                 self.display_recv_message()
             if x == 3:
@@ -213,6 +209,16 @@ class App:
 
         index = self.options.index(self.comboBox1.get())
         self.conv_texts[index].append(message)
+        for past_msg in self.conv_texts[index]:
+            self.listbox1.insert(END, past_msg)
+
+    def displayPosConnection(self):
+        self.listbox1.destroy()
+        self.listbox1 = Listbox(self.frame1)
+        self.listbox1.pack(side="left", fill=BOTH, expand=1)
+
+        index = self.options.index(self.comboBox1.get())
+        self.conv_texts[index].append("Accepted new Client!")
         for past_msg in self.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
 
