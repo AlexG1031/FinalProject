@@ -120,7 +120,7 @@ class App:
             x = self.queue.get()
             print(f'x is {x}')
             if x == 1:
-                self.send_message()
+                self.send_message() # don't think this will ever be used...
             if x == 2:
                 self.display_recv_message()
             if x == 3:
@@ -161,7 +161,7 @@ class App:
             message = self.client_socket.recv(message_length).decode('utf-8')
 
             print(f'{username} > {message}')
-            # self.create_job(2)  # makes sure other clients gets updated
+            self.create_job(2)  # makes sure other clients gets updated
 
         except IOError as e:
             if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
@@ -174,6 +174,7 @@ class App:
             sys.exit()
 
     def display_recv_message(self):
+        print("gooooooood")
         while True:
             # time = 0.00125
             message = ""
@@ -195,6 +196,7 @@ class App:
                     message = self.client_socket.recv(message_length).decode('utf-8')
 
                     print(f'{username} > {message}')
+                    self.displayToScreen(message)
 
             except IOError as e:
                 if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
@@ -205,7 +207,15 @@ class App:
             except Exception as e:
                 print('Reading error: '.format(str(e)))
                 sys.exit()
+    def displayToScreen(self, message):
+        self.listbox1.destroy()
+        self.listbox1 = Listbox(self.frame1)
+        self.listbox1.pack(side="left", fill=BOTH, expand=1)
 
+        index = self.options.index(self.comboBox1.get())
+        self.conv_texts[index].append(message)
+        for past_msg in self.conv_texts[index]:
+            self.listbox1.insert(END, past_msg)
 
 root = Tk()
 root.title("Group Chat")
