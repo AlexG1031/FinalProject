@@ -38,9 +38,8 @@ class App:
         self.comboBox1.bind("<<ComboboxSelected>>", lambda x: self.comboclick())
         self.set_up_connection()
         self.create_workers()
-        self.create_job(3) # will run GUI
-        self.create_job(2) # will always listen for incoming message
-        # self.create_job(1) # will always listen for incoming clients
+        self.create_job(2) # will run GUI
+        self.create_job(1) # will always listen for incoming message
         self.work()
 
 
@@ -120,23 +119,19 @@ class App:
             x = self.queue.get()
             # print(f'x is {x}')
             if x == 1:
-                # self.send_message() # don't think this will ever be used...
-                # self.displayPosConnection()
-                y = 1
-            if x == 2:
                 self.display_recv_message()
-            if x == 3:
+            if x == 2:
                 self.root.mainloop()
             # self.queue.task_done()
 
     def create_job(self, x):  # x can only be 1 or 2
         # for x in self.JOB_NUMBER:
-        if x == 1 or x == 2 or x == 3:
+        if x == 1 or x == 2:
             self.queue.put(x)
             # print("hello")
             # self.queue.join()
         else:
-            print("x is not 1, 2 or 3")
+            print("x is not 1 or 2")
 
     def send_message(self):
         # print("begin send_message")
