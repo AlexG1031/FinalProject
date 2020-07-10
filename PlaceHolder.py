@@ -189,7 +189,19 @@ class App:
                         sys.exit()
                     username_length = int(username_header.decode('utf-8').strip())
                     username = self.client_socket.recv(username_length).decode('utf-8')
-
+                    name_in_options = False
+                    print("1")
+                    for option in self.options:
+                        print("2")
+                        if option == username:
+                            print("3")
+                            name_in_options = True
+                            break
+                    if name_in_options == False:
+                        print("4")
+                        print(f'username is {username}')
+                        self.options.append(username)
+                        self.conv_texts.append([])
                     message_header = self.client_socket.recv(self.HEADER_LENGTH)
                     message_length = int(message_header.decode('utf-8').strip())
                     message = self.client_socket.recv(message_length).decode('utf-8')
