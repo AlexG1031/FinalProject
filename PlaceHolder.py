@@ -212,7 +212,7 @@ class App:
                     clients_name = ""
                     clients_name_length = f"{len(clients_name):<{self.HEADER_LENGTH}}".encode('utf-8')
                     print('2')
-                    clients_name_header = self.client_socket.recv(self.HEADER_LENGTH) #THIS ISN'T RIGHT :D
+                    clients_name_header = self.client_socket.recv(self.HEADER_LENGTH)
                     print('3')
                     print(f'client_name_header is {clients_name_header}')
                     clients_name_length = int(clients_name_header.decode('utf-8').strip())
@@ -224,12 +224,15 @@ class App:
                     print('6')
                     print(f'clients_list is {clients_list}')
                     for client in clients_list:
-                        if client in self.options:
+                        print(f'client is {client}')
+                        print(f'self.my_username is {self.name}')
+                        if client in self.options or client == self.name:
                             continue
                         else:
-                            self.options.append(username)
+                            print(f'client being appended is {client}')
+                            self.options.append(client)
                             self.conv_texts.append([])
-                    self.comboBox()
+                            self.comboBox() # should this be here, bottom or doesn't matter?
                     print(f'{username} > {message}')
                     self.displayToScreen(message)
 
