@@ -157,6 +157,16 @@ class App:
             message_length = int(message_header.decode('utf-8').strip())
             message = self.client_socket.recv(message_length).decode('utf-8')
 
+            clients_name = ""
+            clients_name_length = f"{len(clients_name):<{self.HEADER_LENGTH}}".encode('utf-8')
+
+            clients_name_header = self.client_socket.recv(self.HEADER_LENGTH)
+            clients_name_length = int(clients_name_header.decode('utf-8').strip())
+            clients_name = self.client_socket.recv(clients_name_length).decode('utf-8')
+
+            clients_list = list(clients_name.split(" "))
+            print(f'clients_list is {clients_list}')
+
             print(f'{username} > {message}')
             self.create_job(2)  # makes sure other clients gets updated
 
@@ -186,24 +196,40 @@ class App:
                         sys.exit()
                     username_length = int(username_header.decode('utf-8').strip())
                     username = self.client_socket.recv(username_length).decode('utf-8')
-                    name_in_options = False
-                    print("1")
-                    for option in self.options:
-                        print("2")
-                        if option == username:
-                            print("3")
-                            name_in_options = True
-                            break
-                    if name_in_options == False:
-                        print("4")
-                        print(f'username is {username}')
-                        self.options.append(username)
-                        self.conv_texts.append([])
-                        self.comboBox()
+                    print(f'username_header is {username_header}')
+                    print(f'username_length is {username_length}')
+                    print(f'username is {username}')
+
+
                     message_header = self.client_socket.recv(self.HEADER_LENGTH)
                     message_length = int(message_header.decode('utf-8').strip())
                     message = self.client_socket.recv(message_length).decode('utf-8')
+                    print(f'message_header is {message_header}')
+                    print(f'message_length is {message_length}')
+                    print(f'message is {message}')
 
+                    print('1')
+                    clients_name = ""
+                    clients_name_length = f"{len(clients_name):<{self.HEADER_LENGTH}}".encode('utf-8')
+                    print('2')
+                    clients_name_header = self.client_socket.recv(self.HEADER_LENGTH) #THIS ISN'T RIGHT :D
+                    print('3')
+                    print(f'client_name_header is {clients_name_header}')
+                    clients_name_length = int(clients_name_header.decode('utf-8').strip())
+                    print('4')
+                    clients_name = self.client_socket.recv(clients_name_length).decode('utf-8')
+                    print('5')
+
+                    clients_list = list(clients_name.split(" "))
+                    print('6')
+                    print(f'clients_list is {clients_list}')
+                    for client in clients_list:
+                        if client in self.options:
+                            continue
+                        else:
+                            self.options.append(username)
+                            self.conv_texts.append([])
+                    self.comboBox()
                     print(f'{username} > {message}')
                     self.displayToScreen(message)
 
