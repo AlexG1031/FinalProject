@@ -31,6 +31,7 @@ class App:
         self.frame()
         self.listbox()
         self.label()
+        self.comboBox1 = ttk.Combobox(self.frame2, value=self.options)
         self.comboBox()
         self.text()
         self.text1.bind("<Return>", lambda x: self.onReturn())
@@ -62,6 +63,7 @@ class App:
         self.label1.pack(side="left", fill=X)
 
     def comboBox(self):
+        self.comboBox1.destroy()
         self.comboBox1 = ttk.Combobox(self.frame2, value=self.options)
         self.comboBox1.current(0)
         self.comboBox1.pack(side="left", fill=X)
@@ -202,6 +204,7 @@ class App:
                         print(f'username is {username}')
                         self.options.append(username)
                         self.conv_texts.append([])
+                        self.comboBox()
                     message_header = self.client_socket.recv(self.HEADER_LENGTH)
                     message_length = int(message_header.decode('utf-8').strip())
                     message = self.client_socket.recv(message_length).decode('utf-8')
