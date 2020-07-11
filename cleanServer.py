@@ -1,5 +1,44 @@
 import socket
 import select
+from copy import copy
+
+
+def get_needed_space(message):
+    needed_spaces = 10 - len(
+        bytes(str(len(message)), 'utf-8'))  # number of bits needed to be filled with ''
+    return ' ' * needed_spaces
+
+
+def generate_message(message):
+    spaces = get_needed_space(message)
+    return {'header': bytes(str(len(message)) + spaces, 'utf-8'),
+            'data': bytes(str(message), 'utf-8')}
+
+def notfify_clients(type, actor):
+    server_name = "SERVER"  # TODO a client cannot call him or her self SERVER
+    clients_send = generate_message(clients_str)
+    server_send = generate_message(server_name)
+
+    if type == 'client_joined':
+        notif_msg = "Client" + actor['data'].decode(
+            'utf-8').strip() + " has just entered the group chat. Praise the sun!"
+        notif_msg = generate_message(notif_msg)
+    elif type == 'client_exited':
+        notif_msg = "Client" + actor['data'].decode(
+            'utf-8').strip() + " has just left."
+        notif_msg = generate_message(notif_msg)
+    else:
+        raise Exception('Server: unrecognized notification type')
+    for client_socket in clients:
+        client_socket.send(server_send['header'] + server_send['data'] +
+                           notif_msg['header'] + notif_msg['data'] +
+                           clients_send['header'] + clients_send['data'])
+
+def generate_clients_str(c_dict):
+    rtn = " everyone"
+    for key, value in c_dict.items():
+        rtn += " " + value['data'].decode('utf-8')
+    return rtn
 
 HEADER_LENGTH = 10
 
@@ -12,7 +51,7 @@ server_socket.bind((IP, PORT))
 server_socket.listen()
 sockets_list = [server_socket]
 clients = {}
-clients_str = ""
+clients_str = " everyone"
 print(f'Listening for connections on {IP}:{PORT}...')
 
 
@@ -38,35 +77,39 @@ while True:
             user = receive_message(client_socket)
             if user is False:
                 continue
+            if (user['data'].decode('utf-8') in clients_str):
+                rejected_username = "Another client already has that username... Please choose another name"
+                rejected_username = generate_message(rejected_username)
+                client_socket.send(rejected_username['header'] + rejected_username['data'])
+                break
+            else:
+                accepted_username = "username accepted :)"
+                accepted_username = generate_message(accepted_username)
+                client_socket.send(accepted_username['header'] + accepted_username['data'])
             sockets_list.append(client_socket)
             clients[client_socket] = user
-            if (len(clients_str) > 0):
-                clients_str += " " + user['data'].decode('utf-8')
-            else:
-                clients_str = user['data'].decode('utf-8')
+            clients_str = generate_clients_str(clients)
             print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
                                                                             user['data'].decode('utf-8')))
-
+            notfify_clients('client_joined', actor=user)
         else:
+            remove_client = copy(clients[notified_socket])
+            removed_client_encoded = clients[notified_socket]['data'].decode('utf-8')
             message = receive_message(notified_socket)
             if message is False:
-                print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
+                print('Closed connection from: {}'.format(removed_client_encoded))
                 # worry about this later
                 sockets_list.remove(notified_socket)
+
+                # notify all the clients that someone just exited.
                 del clients[notified_socket]
+                clients_str = generate_clients_str(clients)
+
+                notfify_clients('client_exited', remove_client)
                 continue
             user = clients[notified_socket]
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
-            needed_spaces = 10 - len(bytes(str(len(clients_str)), 'utf-8')) # number of bits needed to be filled with ''
-            spaces = ""
-            while needed_spaces > 0:
-                spaces += " "
-                needed_spaces = needed_spaces - 1
-            print(f'spaces is {needed_spaces}')
-            clients_send = {'header': bytes(str(len(clients_str)) + spaces, 'utf-8'),
-                            'data': bytes(str(clients_str), 'utf-8')}
-            print(f'clients_send header is {bytes(str(len(clients_str)), "utf-8")}')
-            print(f'client_send data is {bytes(str(clients_str), "utf-8")}')
+            clients_send = generate_message(clients_str)
             for client_socket in clients:
                 if client_socket != notified_socket:
                     client_socket.send(user['header'] + user['data'] + message['header'] + message['data']
