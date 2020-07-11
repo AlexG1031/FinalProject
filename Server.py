@@ -21,10 +21,10 @@ def notfify_clients(type, actor):
 
     if type == 'client_joined':
         notif_msg = "Client " + actor['data'].decode(
-            'utf-8').strip() + " has just entered the group chat. Praise the sun!"
+            'utf-8').strip() + " has just joined the group chat. Praise the sun!"
         notif_msg = generate_message(notif_msg)
     elif type == 'client_exited':
-        notif_msg = "Client" + actor['data'].decode(
+        notif_msg = "Client " + actor['data'].decode(
             'utf-8').strip() + " has just left."
         notif_msg = generate_message(notif_msg)
     else:
@@ -107,7 +107,7 @@ while True:
                 del clients[notified_socket]
                 clients_str = generate_clients_str(clients)
 
-                notfify_clients('client_exited', remove_client)
+                notfify_clients('client_exited', actor=remove_client)
                 continue
             user = clients[notified_socket]
             print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')

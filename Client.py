@@ -52,7 +52,16 @@ class Client:
             clients_name = self.client_socket.recv(clients_name_length).decode('utf-8')
             clients_list = list(clients_name.split(" "))
 
-            self.clients_online = clients_list
+            # self.clients_online = clients_list
+            for client in clients_list:
+                if client not in self.clients_online:
+                    self.clients_online.append(client)
+                    self.conv_texts.append([])
+            for client in self.clients_online:
+                if client not in clients_list:
+                    index = self.clients_online.index(client)
+                    self.clients_online.remove(client)
+                    self.conv_texts.remove(self.conv_texts[index])
             print(f'{from_username} > {message}')
             return message
 
