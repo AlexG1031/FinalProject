@@ -16,7 +16,6 @@ class Client:
         self.HEADER_LENGTH = 10
         self.IP = "127.0.0.1"
         self.PORT = 1234
-        # send to server and see if it is within the cleanServer
         self.root = root
         self.my_username = ""
         self.name = self.my_username
@@ -28,10 +27,12 @@ class Client:
         self.client_socket.connect((self.IP, self.PORT))
         self.client_socket.setblocking(True)
 
-    def send(self, message):
+    def send(self, message, whom):
         message = message.encode('utf-8')
         message_header = f"{len(message):<{self.HEADER_LENGTH}}".encode('utf-8')
-        self.client_socket.send(message_header + message)
+        whom = whom.encode('utf-8')
+        whom_header = f"{len(whom):<{self.HEADER_LENGTH}}".encode('utf-8')
+        self.client_socket.send(message_header + message + whom_header + whom)
 
     def receive(self):
         try:
@@ -111,9 +112,6 @@ class App:
 
         self.root.mainloop()
 
-    def send_message(self, msg):
-        self.client.send(msg)
-
     def frame(self):
         self.frame1.pack(fill=X, side="top")
         self.frame3.pack(fill=X, side="bottom")
@@ -145,7 +143,7 @@ class App:
         self.client.conv_texts[index].append(msg)
         for past_msg in self.client.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
-        self.send_message(msg)
+        self.client.send(msg, self.combo_box.get())
 
     def comboclick(self, nothing):
         self.listbox1.destroy()
@@ -162,7 +160,6 @@ class App:
         t.daemon = True
         t.start()
 
-    # Do next job that is in the queue (send message or display new message)
     def work(self):
         while True:
             msg = self.client.receive()
@@ -201,9 +198,7 @@ while True:
     if my_username == "SERVER":
         print('Cannot have name be "SERVER')
     else:
-        username = my_username.encode('utf-8')
-        username_header = f"{len(username):<{client.HEADER_LENGTH}}".encode('utf-8')
-        client.client_socket.send(username_header + username)
+        client.send(my_username, "")
         # now need to wait for response and see if name has already been picked
         response_header = client.client_socket.recv(client.HEADER_LENGTH)
         response_length = int(response_header.decode('utf-8').strip())
