@@ -15,7 +15,7 @@ def generate_message(message):
             'data': bytes(str(message), 'utf-8')}
 
 def notfify_clients(type, actor):
-    server_name = "SERVER"  # TODO a client cannot call him or her self SERVER
+    server_name = "SERVER"
     clients_send = generate_message(clients_str)
     server_send = generate_message(server_name)
 
@@ -75,24 +75,25 @@ while True:
 
         if notified_socket == server_socket:
             client_socket, client_address = server_socket.accept()
-            user = receive_message(client_socket)
-            if user is False:
-                continue
-            if (user['data'].decode('utf-8') in clients_str):
-                rejected_username = "Another client already has that username... Please choose another name"
-                rejected_username = generate_message(rejected_username)
-                client_socket.send(rejected_username['header'] + rejected_username['data'])
-                break
-            else:
-                accepted_username = "username accepted :)"
-                accepted_username = generate_message(accepted_username)
-                client_socket.send(accepted_username['header'] + accepted_username['data'])
-            sockets_list.append(client_socket)
-            clients[client_socket] = user
-            clients_str = generate_clients_str(clients)
-            print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
-                                                                            user['data'].decode('utf-8')))
-            notfify_clients('client_joined', actor=user)
+            while True:
+                user = receive_message(client_socket)
+                if user is False:
+                    continue
+                if (user['data'].decode('utf-8') in clients_str):
+                    rejected_username = "Another client already has that username... Please choose another name"
+                    rejected_username = generate_message(rejected_username)
+                    client_socket.send(rejected_username['header'] + rejected_username['data'])
+                else:
+                    accepted_username = "username accepted :)"
+                    accepted_username = generate_message(accepted_username)
+                    client_socket.send(accepted_username['header'] + accepted_username['data'])
+                    sockets_list.append(client_socket)
+                    clients[client_socket] = user
+                    clients_str = generate_clients_str(clients)
+                    print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
+                                                                                    user['data'].decode('utf-8')))
+                    notfify_clients('client_joined', actor=user)
+                    break
         else:
             remove_client = copy(clients[notified_socket])
             removed_client_encoded = clients[notified_socket]['data'].decode('utf-8')

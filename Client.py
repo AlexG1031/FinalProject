@@ -5,8 +5,6 @@ import errno
 import sys
 import threading
 
-# TODO remove the duplicates in the welcome string
-
 
 class Client:
 
@@ -119,7 +117,6 @@ class App:
         self.label1.pack(side="left", fill=X)
 
     def comboBox(self):
-        # TODO set the default selection of the combo box to be the previously selected.
         self.combo_box.pack(side="left", fill=X)
         self.combo_box.bind("<<ComboboxSelected>>", self.comboclick)
 
@@ -192,18 +189,20 @@ client.set_up_connection()
 
 while True:
     my_username = input("Username: ")
-    username = my_username.encode('utf-8')
-    username_header = f"{len(username):<{client.HEADER_LENGTH}}".encode('utf-8')
-    client.client_socket.send(username_header + username)
-    # now need to wait for response and see if name has already been picked
-    response_header = client.client_socket.recv(client.HEADER_LENGTH)
-    response_length = int(response_header.decode('utf-8').strip())
-    response = client.client_socket.recv(response_length).decode('utf-8')
-    if response == "username accepted :)":
-        print('username accepted :)')
-        break
+    if my_username == "SERVER":
+        print('Cannot have name be "SERVER')
     else:
-        print('Username already chosen, please choose another name...')
-        continue
+        username = my_username.encode('utf-8')
+        username_header = f"{len(username):<{client.HEADER_LENGTH}}".encode('utf-8')
+        client.client_socket.send(username_header + username)
+        # now need to wait for response and see if name has already been picked
+        response_header = client.client_socket.recv(client.HEADER_LENGTH)
+        response_length = int(response_header.decode('utf-8').strip())
+        response = client.client_socket.recv(response_length).decode('utf-8')
+        if response == "username accepted :)":
+            print('username accepted :)')
+            break
+        else:
+            print('Username already chosen, please choose another name...')
 
 app = App(root, my_username, client)
