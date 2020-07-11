@@ -11,10 +11,14 @@ def get_needed_space(message):
 
 def generate_message(message):
     spaces = get_needed_space(message)
+    everybody = "Everybody"
+    spaces2 = get_needed_space(everybody)
     return {'message_header': bytes(str(len(message)) + spaces, 'utf-8'),
-            'message_data': bytes(str(message), 'utf-8')}
+            'message_data': bytes(str(message), 'utf-8'),
+            'whom_header': bytes(str(len(everybody))+spaces2, 'utf-8'),
+            'whom_data': bytes(str(everybody), 'utf-8')}
 
-def notfify_clients(type, actor):
+def notify_clients(type, actor):
     server_name = "SERVER"
     clients_send = generate_message(clients_str)
     server_send = generate_message(server_name)
@@ -32,7 +36,8 @@ def notfify_clients(type, actor):
     for client_socket in clients:
         client_socket.send(server_send['message_header'] + server_send['message_data'] +
                            notif_msg['message_header'] + notif_msg['message_data'] +
-                           clients_send['message_header'] + clients_send['message_data'])
+                           clients_send['message_header'] + clients_send['message_data'] +
+                           server_send['whom_header'] + server_send['whom_data'])
 
 def generate_clients_str(c_dict):
     rtn = "Everybody"
@@ -99,7 +104,7 @@ while True:
                     client_to_socket.update({user['message_data'].decode('utf-8'): client_socket})
                     print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
                                                                                     user['message_data'].decode('utf-8')))
-                    notfify_clients('client_joined', actor=user)
+                    notify_clients('client_joined', actor=user)
                     break
         else:
             remove_client = copy(clients[notified_socket])
@@ -114,7 +119,7 @@ while True:
                 del clients[notified_socket]
                 clients_str = generate_clients_str(clients)
                 del client_to_socket[removed_client_encoded]
-                notfify_clients('client_exited', actor=remove_client)
+                notify_clients('client_exited', actor=remove_client)
                 continue
             user = clients[notified_socket]
             print(f'Received message from {user["message_data"].decode("utf-8")}: {message["message_data"].decode("utf-8")}')
@@ -122,14 +127,16 @@ while True:
             if message["whom_data"].decode('utf-8').strip() == "Everybody":
                 for client_socket in clients:
                     if client_socket != notified_socket:
-                        client_socket.send(user['message_header'] + user['message_data']
-                                           + message['message_header'] + message['message_data']
-                                           + clients_send['message_header'] + clients_send['message_data'])
+                        client_socket.send(user['message_header'] + user['message_data'] +
+                                           message['message_header'] + message['message_data'] +
+                                           clients_send['message_header'] + clients_send['message_data'] +
+                                           message['whom_header'] + message['whom_data'])
             else:
                 client_socket = client_to_socket.get(message["whom_data"].decode('utf-8').strip())
                 client_socket.send(user['message_header'] + user['message_data'] +
                                    message['message_header'] + message['message_data'] +
-                                   clients_send['message_header'] + clients_send['message_data'])
+                                   clients_send['message_header'] + clients_send['message_data'] +
+                                   user['message_header'] + user['message_data'])
 
     for notified_socket in exception_sockets:
         sockets_list.remove(notified_socket)

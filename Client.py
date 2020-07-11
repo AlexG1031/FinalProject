@@ -53,6 +53,10 @@ class Client:
             clients_name = self.client_socket.recv(clients_name_length).decode('utf-8')
             clients_list = list(clients_name.split(" "))
 
+            whom_header = self.client_socket.recv(self.HEADER_LENGTH)
+            whom_length = int(whom_header.decode('utf-8').strip())
+            whom = self.client_socket.recv(whom_length).decode('utf-8')
+
             # self.clients_online = clients_list
             for client in clients_list:
                 if client not in self.clients_online:
@@ -64,7 +68,7 @@ class Client:
                     self.clients_online.remove(client)
                     self.conv_texts.remove(self.conv_texts[index])
             print(f'{from_username} > {message}')
-            return message
+            return message, whom
 
         except IOError as e:
             if e.errno != errno.EAGAIN and e.errno != errno.EWOULDBLOCK:
@@ -162,27 +166,32 @@ class App:
 
     def work(self):
         while True:
-            msg = self.client.receive()
-            self.display_recvd_message(msg)
+            msg, from_whom = self.client.receive()
+            self.display_recvd_message(msg, from_whom)
 
-    def display_recvd_message(self, msg):
+    def display_recvd_message(self, msg, from_whom):
         index = self.client.clients_online.index(self.combo_box.get())
+        # index = self.client.clients_online.index(from_whom)
         self.combo_box.destroy()
         self.combo_box = ttk.Combobox(self.frame2, value=self.client.clients_online)
         self.comboBox()
         self.combo_box.current(index)
-        # self.comboBox()  # should this be here, bottom or doesn't matter?
-        self.displayToScreen(msg)
+        self.displayToScreen(msg, from_whom)
 
-    def displayToScreen(self, message):
-        self.listbox1.destroy()
-        self.listbox1 = Listbox(self.frame1)
-        self.listbox1.pack(side="left", fill=BOTH, expand=1)
-
-        index = self.client.clients_online.index(self.combo_box.get())
-        self.client.conv_texts[index].append(message)
-        for past_msg in self.client.conv_texts[index]:
-            self.listbox1.insert(END, past_msg)
+    def displayToScreen(self, message, from_whom):
+        # message we're getting is from person who's selected in combo_box
+        if self.combo_box.get() == from_whom:
+            self.listbox1.destroy()
+            self.listbox1 = Listbox(self.frame1)
+            self.listbox1.pack(side="left", fill=BOTH, expand=1)
+            index = self.client.clients_online.index(from_whom)
+            self.client.conv_texts[index].append(message)
+            for past_msg in self.client.conv_texts[index]:
+                self.listbox1.insert(END, past_msg)
+        # update only the conversation_texts
+        else:
+            index = self.client.clients_online.index(from_whom)
+            self.client.conv_texts[index].append(message)
 
 
 root = Tk()
