@@ -57,7 +57,6 @@ class Client:
             whom_length = int(whom_header.decode('utf-8').strip())
             whom = self.client_socket.recv(whom_length).decode('utf-8')
 
-            # self.clients_online = clients_list
             for client in clients_list:
                 if client not in self.clients_online:
                     self.clients_online.append(client)
@@ -181,13 +180,14 @@ class App:
     def displayToScreen(self, message, from_whom):
         # message we're getting is from person who's selected in combo_box
         if self.combo_box.get() == from_whom:
-            self.listbox1.destroy()
-            self.listbox1 = Listbox(self.frame1)
-            self.listbox1.pack(side="left", fill=BOTH, expand=1)
-            index = self.client.clients_online.index(from_whom)
-            self.client.conv_texts[index].append(message)
-            for past_msg in self.client.conv_texts[index]:
-                self.listbox1.insert(END, past_msg)
+            if self.combo_box.get() != my_username:
+                self.listbox1.destroy()
+                self.listbox1 = Listbox(self.frame1)
+                self.listbox1.pack(side="left", fill=BOTH, expand=1)
+                index = self.client.clients_online.index(from_whom)
+                self.client.conv_texts[index].append(message)
+                for past_msg in self.client.conv_texts[index]:
+                    self.listbox1.insert(END, past_msg)
         # update only the conversation_texts
         else:
             index = self.client.clients_online.index(from_whom)
