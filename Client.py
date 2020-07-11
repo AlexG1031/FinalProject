@@ -4,7 +4,6 @@ import socket
 import errno
 import sys
 import threading
-from queue import Queue
 
 # TODO remove the duplicates in the welcome string
 
@@ -12,7 +11,7 @@ from queue import Queue
 class Client:
 
     def __init__(self):
-        self.clients_online = []
+        self.clients_online = ["Everybody"]
         self.conv_texts = [
             [],
         ]
@@ -94,6 +93,7 @@ class App:
         # create combobax
         self.combo_box = ttk.Combobox(self.frame2, value=self.client.clients_online)
         self.comboBox()
+        self.combo_box.current(0)
 
         # create text
         self.text1 = Text(self.frame3, width=40, height=5)
@@ -102,8 +102,6 @@ class App:
         # self.set_up_connection() #Don't think we need this here...
         self.create_start_workers()
 
-        msg = self.uname + " just joined the group chat!"
-        self.send_message(msg)
         self.root.mainloop()
 
     def send_message(self, msg):
@@ -129,7 +127,8 @@ class App:
         self.text1.pack(side="left")
         self.text1.bind("<Return>", self.onReturn)
 
-    def onReturn(self):
+    def onReturn(self, nothing):
+        msg = self.uname + ": " + self.text1.get("0.0", "end")
         self.text1.delete("0.0", "end")
 
         self.listbox1.destroy()
@@ -137,13 +136,12 @@ class App:
         self.listbox1.pack(side="left", fill=BOTH, expand=1)
 
         index = self.client.clients_online.index(self.combo_box.get())
-        self.client.conv_texts[index].append(self.msg)
+        self.client.conv_texts[index].append(msg)
         for past_msg in self.client.conv_texts[index]:
             self.listbox1.insert(END, past_msg)
-        msg = self.uname + ": " + self.text1.get("0.0", "end")
         self.send_message(msg)
 
-    def comboclick(self):
+    def comboclick(self, nothing):
         self.listbox1.destroy()
         self.listbox1 = Listbox(self.frame1)
         self.listbox1.pack(side="left", fill=BOTH, expand=1)
@@ -165,9 +163,12 @@ class App:
             self.display_recvd_message(msg)
 
     def display_recvd_message(self, msg):
+        index = self.client.clients_online.index(self.combo_box.get())
         self.combo_box.destroy()
         self.combo_box = ttk.Combobox(self.frame2, value=self.client.clients_online)
-        self.comboBox()  # should this be here, bottom or doesn't matter?
+        self.comboBox()
+        self.combo_box.current(index)
+        # self.comboBox()  # should this be here, bottom or doesn't matter?
         self.displayToScreen(msg)
 
     def displayToScreen(self, message):

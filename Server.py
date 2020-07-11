@@ -20,7 +20,7 @@ def notfify_clients(type, actor):
     server_send = generate_message(server_name)
 
     if type == 'client_joined':
-        notif_msg = "Client" + actor['data'].decode(
+        notif_msg = "Client " + actor['data'].decode(
             'utf-8').strip() + " has just entered the group chat. Praise the sun!"
         notif_msg = generate_message(notif_msg)
     elif type == 'client_exited':
@@ -35,9 +35,10 @@ def notfify_clients(type, actor):
                            clients_send['header'] + clients_send['data'])
 
 def generate_clients_str(c_dict):
-    rtn = " everyone"
+    rtn = "Everybody"
     for key, value in c_dict.items():
-        rtn += " " + value['data'].decode('utf-8')
+        val = value['data'].decode('utf-8')
+        rtn += " " + val
     return rtn
 
 HEADER_LENGTH = 10
